@@ -340,8 +340,11 @@ $(function() {
         }
         ); // End Chart 2
 
+
+        {% if coverage_section %}
+
         //______________________________________
-        // Start Chart 3
+        // Chart 3: Coverage
         chart3 = new Highcharts.chart(
         {
             chart: {renderTo: 'container3', borderColor: '#003399', height: 200, borderWidth: 1, isZoomed:false},
@@ -404,14 +407,14 @@ $(function() {
             }, function(chart) { //add this function to the chart definition to get synchronized crosshairs
                                 //this function needs to be added to each syncronized chart 
                                 syncronizeCrossHairs(chart);
-            });
-            
-            
-            //fine chart 3
+            }
+
+        ); //End chart 3 /coverage)
+        {% endif %}            
+
         });
     }); // end first document ready function
 });
-
 
 </script>
 
