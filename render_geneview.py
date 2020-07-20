@@ -32,7 +32,7 @@ def render():
 
   options = cli_options()
 
-  # Render data for gineview here!
+  # Render data for geneview here!
 
   env = Environment( loader=FileSystemLoader(template_dir) )
 
