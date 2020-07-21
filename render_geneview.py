@@ -5,6 +5,11 @@ import argparse
 
 template_dir = './templates'
 
+# Rendering parameters
+custom_tick_number = 5
+abslolute_position_min = 158141736
+abslolute_position_max = 158287227
+
 # Data series style
 utr5_style_dict= { "pointWidth": "20", "color": "red", "name": "5UTR" }
 cds_style_dict= { "pointWidth": "20", "color": "orange", "name": "CDS" }
@@ -36,12 +41,15 @@ def render():
 
   env = Environment( loader=FileSystemLoader(template_dir) )
 
-  template = env.get_template("geneview.j2")
+  template = env.get_template("geneview_v2.j2")
 
   rendered_template = template.render( 
                                        data_m={"datam":"123"},
                                        data_d={"datad":"456"},
                                        deta_series={"series":"789"},
+                                       custom_tick_number=custom_tick_number,
+                                       abslolute_position_min = abslolute_position_min,
+                                       abslolute_position_max = abslolute_position_max,
                                        coverage_section=options.coverage_section
                                      )
 
