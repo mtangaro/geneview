@@ -146,9 +146,9 @@ $(function() {
         }
 
         $(document).ready(function() {
-        var tick_points_array = computeTickInterval(0, 0);
+        var tick_points_array = computeTickInterval(158141846, 158287221);
 
-        $('#btn').click(function(){unzoom(0, 0);});
+        $('#btn').click(function(){unzoom(158141846, 158287221);});
                         
         var myPlotLineId = "myPlotLine";
 
@@ -166,10 +166,10 @@ $(function() {
                     resetZoomButton: { theme: { display: 'none'} }
                    },
             credits: {enabled: false},
-            title: {text: 'Gene View<br>chr4:0:0'},
+            title: {text: 'Gene View<br>chr4:158141846:158287221'},
             xAxis: {
-                min: 0,
-                max: 0,
+                min: 158141846,
+                max: 158287221,
                 tickPositions: tick_points_array,
                 labels: {formatter: function() {return this.value;}},
                 //scrollbar: {enabled: true},
@@ -535,8 +535,8 @@ $(function() {
             credits: {enabled: false},
             title: {text: 'RNA Editing events'},
             xAxis: {
-                min: 0,
-                max: 0,
+                min: 158141846,
+                max: 158287221,
                 tickPositions: tick_points_array,
                 labels: {formatter: function() {return this.value;}},
                 //scrollbar: {enabled: true},
@@ -642,8 +642,8 @@ $(function() {
             credits: {enabled: false},
             title: {text: 'RNAseq Coverage'},
             xAxis: {
-                min: 0,
-                max: 0,
+                min: 158141846,
+                max: 158287221,
                 tickPositions: tick_points_array,
                 labels: {formatter: function() {return this.value;}},
                 //scrollbar: {enabled: true},
