@@ -35,13 +35,21 @@ def render_series_data(fin, name):
   # Select data by gene name
   gene_data = allgenes_table.loc[allgenes_table['gene_name'] == name]
 
-  # Render data serie for geneview
-  gene_data_list = gene_data['transcript_info'].to_list()
-  serie = "{data: " + str(gene_data_list).replace('}",', '}",\n') +  "}" 
-  serie = serie.replace('{data: [','{data: [\n')
-  serie = serie.replace(']}','\n]},')
+  # Grouping by transcript
+  transcript_list = gene_data.groupby('gene_id')['transcript_info'].apply(list)
 
-  return serie
+  # Render data serie for geneview
+  series = ''
+  y_counter=0
+  for index, value in transcript_list.items():
+    value = "{data: " + str(value).replace('}",', '}",\n') +  "}"
+    value = value.replace('y: 0','y: ' + str(y_counter))
+    value = value.replace('{data: [','{data: [\n')
+    value = value.replace(']}','\n]},')
+    series += value + "\n"
+    y_counter += 1
+
+  return series
 
 #______________________________________
 def render():
