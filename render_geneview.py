@@ -41,27 +41,6 @@ def render_series_data(fin, name):
   serie = serie.replace('{data: [','{data: [\n')
   serie = serie.replace(']}','\n]},')
 
-  # Removing unnecessary info from transcript column after "-" 
-  #gene_data['transcript_info'] = allgenes_table['transcript_info'].apply(lambda x: x.split('-',1)[0]+"'}")
-
-  # Grouping by gene
-  # TODO: Gene is specified as input. No more needed. Will be removed in final version
-  #allgenes_list = allgenes_table.groupby('gene_name')['transcript_info'].apply(list)
-
-  # Create new DataFrame for fast edit
-  # TODO: Gene is specified as input. No more needed. Will be removed in final version
-  #data = pd.DataFrame({'gene_name':allgenes_list.index, 'transcript_info':allgenes_list.values})
-
-  # Format data for geneview
-  # TODO: Gene is specified as input. No more needed. Will be removed in final version
-  #gene_data['transcript_info'] = gene_data['transcript_info'].apply(lambda x: "{data: " + str(x) +  "}")
-
-  ## Render data series for geneview
-  #series = ''
-  ##for i in range(0,allgenes_list.shape[0]):
-  #for i in range(0,2):
-  #  series += data.loc[i]['transcript_info']+ ',\n'
-
   return serie
 
 #______________________________________
