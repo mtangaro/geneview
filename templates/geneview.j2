@@ -23,7 +23,7 @@
 $(function() {
     //RNA Editing events
     var datam={{ data_m }} 
-	
+        
     // Data Coverage
     var datad={{ data_d }}
     
@@ -39,7 +39,6 @@ $(function() {
     $(document).ready(function() {
         
         function unzoom() {
-            console.log("unzoom function called");
             chart1.options.chart.isZoomed = false;
             chart2.options.chart.isZoomed = false;
             chart3.options.chart.isZoomed = false;
@@ -51,7 +50,6 @@ $(function() {
 
         //catch mousemove event and have all 3 charts' crosshairs move along indicated values on x axis
         function syncronizeCrossHairs(chart) {
-            console.log("syncronize cross hairs called");
             var container = $(chart.container),
                 offset = container.offset(),
                 x, y, isInside, report;
@@ -96,23 +94,29 @@ $(function() {
             }); // end mousemove
         } //end syncronizeCrossHairs
 
-        //compute a reasonable tick interval given the zoom range -
-        //have to compute this since we set the tickIntervals in order
-        //to get predictable synchronization between 3 charts with
-        //different data.
+        // Compute tick positions point to be used with tickPositions
+        // https://api.highcharts.com/highcharts/xAxis.tickPositions
+        // Have to compute this since we set the tickPositions in order
+        // to get predictable synchronization between 3 charts with
+        // different data.
+        // 1. The axis range is calculated with Max-Min.
+        // 2. The tick interval is calculated as the range over the number of tick points,
+        // 3. The tick interval is truncaated to have a integer interval.
+        // 4. The positions are computed adding the tick interval to the Min.
+        // WARNING: The last position is always the Max.
         function computeTickInterval(xMin, xMax) {
-            console.log("compute tick interval inside function");
-            console.log(xMin);
-            console.log(xMax);
+            var custom_tick_number = {{ custom_tick_number }};
             var zoomRange = xMax - xMin;
-            console.log(zoomRange);
-            console.log("END compute tick interval");
-
-            
-            currentTickInterval = zoomRange/5;
-            console.log("range calcolato: ", zoomRange);
-            console.log("tick interval calcolato: ", currentTickInterval);
-            return currentTickInterval;
+            currentTickInterval = Math.trunc(zoomRange/custom_tick_number);
+            var tick_points = [xMin]; 
+            var i;
+            var temp = xMin
+            for (i = 0; i < custom_tick_number-1; i++) {
+              temp += currentTickInterval
+              tick_points.push(temp);
+            }; 
+            tick_points.push(xMax);
+            return tick_points;
         }
 
         //explicitly set the tickInterval for the 3 charts - based on
@@ -131,23 +135,20 @@ $(function() {
         }
 
         //reset the extremes and the tickInterval to default values
-        function unzoom() {
-            chart1.xAxis[0].options.tickInterval = defaultTickInterval;
+        function unzoom(min, max) {
             chart1.xAxis[0].isDirty = true;
-            chart2.xAxis[0].options.tickInterval = defaultTickInterval;
             chart2.xAxis[0].isDirty = true;
-            chart3.xAxis[0].options.tickInterval = defaultTickInterval;
             chart3.xAxis[0].isDirty = true;
         
-            chart1.xAxis[0].setExtremes(null, null);
-            chart2.xAxis[0].setExtremes(null, null);
-            chart3.xAxis[0].setExtremes(null, null);
+            chart1.xAxis[0].setExtremes(min, max);
+            chart2.xAxis[0].setExtremes(min, max);
+            chart3.xAxis[0].setExtremes(min, max);
         }
 
         $(document).ready(function() {
-        var default_tick_interval = computeTickInterval(158141736, 158287227);
+        var tick_points_array = computeTickInterval({{ abslolute_position_min }}, {{ abslolute_position_max }});
 
-        $('#btn').click(function(){unzoom();});
+        $('#btn').click(function(){unzoom({{ abslolute_position_min }}, {{ abslolute_position_max }});});
                         
         var myPlotLineId = "myPlotLine";
 
@@ -155,55 +156,65 @@ $(function() {
         // Start Chart 1
         chart1 = new Highcharts.Chart(
         {
-            chart: {renderTo: 'container', type: 'xrange', zoomType: 'x', height: 300, borderColor: '#003399', borderWidth: 1, isZoomed:false},
+            chart: {renderTo: 'container',
+                    type: 'xrange',
+                    zoomType: 'x',
+                    height: 300,
+                    borderColor: '#003399',
+                    borderWidth: 1,
+                    isZoomed:false,
+                    resetZoomButton: { theme: { display: 'none'} }
+                   },
             credits: {enabled: false},
-            title: {text: 'Gene View<br>chr4:158141736:158287227'},
+            title: {text: 'Gene View<br>chr4:{{ abslolute_position_min }}:{{ abslolute_position_max }}'},
             xAxis: {
-                min: 158141736,
-                max: 158287227,
-                minRange: 500,
-                //startOnTick: true,
-                //endOnTick: true,
-                showLastLabel: true,
-                tickInterval: default_tick_interval,
+                min: {{ abslolute_position_min }},
+                max: {{ abslolute_position_max }},
+                tickPositions: tick_points_array,
                 labels: {formatter: function() {return this.value;}},
                 //scrollbar: {enabled: true},
                 events: {
                     afterSetExtremes:function(){
-                        console.log(!this.chart.options.chart.isZoomed)
                         if (!this.chart.options.chart.isZoomed){
-                            console.log("chart1")
-                            var xMin = this.chart.xAxis[0].min;
-                            console.log("xMin: ", xMin);
-                            var xMax = this.chart.xAxis[0].max;
-                            console.log("xMax: ", xMax); 
-                            var tkInterval = computeTickInterval(xMin, xMax);
-                            console.log("Tick interval usato: ", tkInterval);
-                            
-                            chart1.xAxis[0].options.tickInterval = tkInterval;
-                            chart1.xAxis[0].options.tickAmount = 5;
+
+                            var local_min = Math.trunc(this.chart.xAxis[0].min);
+                            var local_max = Math.trunc(this.chart.xAxis[0].max); 
+                            var tk_positions = computeTickInterval(local_min, local_max);
+
+                            chart1.xAxis[0].options.min = local_min;
+                            chart1.xAxis[0].options.max = local_max;
+                            chart1.xAxis[0].options.tickPositions = tk_positions;
                             chart1.xAxis[0].isDirty = true;
-                            
-                            chart2.xAxis[0].options.tickInterval = tkInterval;
+                            chart1.xAxis[0].setExtremes(null, null);
+
+                            chart2.xAxis[0].options.min = local_min;
+                            chart2.xAxis[0].options.max = local_max;
+                            chart2.xAxis[0].options.tickPositions = tk_positions;
                             chart2.xAxis[0].isDirty = true;
-                            
-                            chart3.xAxis[0].options.tickInterval = tkInterval;
+                            chart2.xAxis[0].setExtremes(null, null);
+
+                            chart3.xAxis[0].options.min = local_min;
+                            chart3.xAxis[0].options.max = local_max;
+                            chart3.xAxis[0].options.tickPositions = tk_positions;
                             chart3.xAxis[0].isDirty = true;
+                            chart3.xAxis[0].setExtremes(null, null);
                                              
                             chart2.options.chart.isZoomed = true;
                             chart3.options.chart.isZoomed = true;
                             
-                            chart2.xAxis[0].setExtremes(xMin, xMax, true);          
-                            chart3.xAxis[0].setExtremes(xMin, xMax, true);
+                            chart2.xAxis[0].setExtremes(local_min, local_max, true);          
+                            chart3.xAxis[0].setExtremes(local_min, local_max, true);
                             
                             chart2.options.chart.isZoomed = false;
                             chart3.options.chart.isZoomed = false;
+                            
                         }
                     }
                 }
             },
                 
-            yAxis: {title: {text: ''},
+            yAxis: {
+                title: {text: ''},
                 categories: [],
                 reversed: true,
                 labels: {enabled: false},
@@ -267,41 +278,72 @@ $(function() {
         // Start Chart 2
         chart2 = new Highcharts.Chart(
         { 
-            chart: {renderTo: 'container2', zoomType: 'x',type: 'scatter', height: 200, borderColor: '#003399', borderWidth: 1, isZoomed:false},
-            credits: {enabled: false},title: {text: 'RNA Editing events'},
+            chart: {renderTo: 'container2',
+                    zoomType: 'x',
+                    type: 'scatter',
+                    height: 200,
+                    borderColor: '#003399',
+                    borderWidth: 1,
+                    isZoomed:false,
+                    resetZoomButton: { theme: { display: 'none'} }
+                   },
+            credits: {enabled: false},
+            title: {text: 'RNA Editing events'},
             xAxis: {
-                min: 158141736,
-                max: 158287227,
-                minRange: 500,
-                startOnTick: true,
-                endOnTick: true,
-                showLastLabel: true,
-                tickInterval: 1500,
-                /*events: {
+                min: {{ abslolute_position_min }},
+                max: {{ abslolute_position_max }},
+                tickPositions: tick_points_array,
+                labels: {formatter: function() {return this.value;}},
+                //scrollbar: {enabled: true},
+                events: {
                     afterSetExtremes: function() {
                         if (!this.chart.options.chart.isZoomed) {
-                            console.log("chart2")
-                            var xMin = this.chart.xAxis[0].min;
-                            var xMax = this.chart.xAxis[0].max;
+
+                            var local_min = Math.trunc(this.chart.xAxis[0].min);
+                            var local_max = Math.trunc(this.chart.xAxis[0].max); 
+                            var tk_positions = computeTickInterval(local_min, local_max);
+
+                            chart1.xAxis[0].options.min = local_min;
+                            chart1.xAxis[0].options.max = local_max;
+                            chart1.xAxis[0].options.tickPositions = tk_positions;
+                            chart1.xAxis[0].isDirty = true;
+                            chart1.xAxis[0].setExtremes(null, null);
+
+                            chart2.xAxis[0].options.min = local_min;
+                            chart2.xAxis[0].options.max = local_max;
+                            chart2.xAxis[0].options.tickPositions = tk_positions;
+                            chart2.xAxis[0].isDirty = true;
+                            chart2.xAxis[0].setExtremes(null, null);
+
+                            chart3.xAxis[0].options.min = local_min;
+                            chart3.xAxis[0].options.max = local_max;
+                            chart3.xAxis[0].options.tickPositions = tk_positions;
+                            chart3.xAxis[0].isDirty = true;
+                            chart3.xAxis[0].setExtremes(null, null);
+                                             
                             chart1.options.chart.isZoomed = true;
                             chart3.options.chart.isZoomed = true;
-                            chart1.xAxis[0].setExtremes(xMin, xMax, true);
-                                        
-                            chart3.xAxis[0].setExtremes(xMin, xMax, true);
+                            
+                            chart1.xAxis[0].setExtremes(local_min, local_max, true);          
+                            chart3.xAxis[0].setExtremes(local_min, local_max, true);
+                            
                             chart1.options.chart.isZoomed = false;
                             chart3.options.chart.isZoomed = false;
+                            
                         }
                     }
-                }*/
+                }
             },
         
-            yAxis: {title: {text: ''},
+            yAxis: {
+                title: {text: ''},
                 categories: [],
                 //reversed: false,
                 labels: {enabled: false},
                 gridLineColor: '#ffffff',
                 lineColor: '#ffffff'
             },
+            
             plotOptions: {
                 scatter: {
                     marker: {
@@ -340,81 +382,117 @@ $(function() {
         }
         ); // End Chart 2
 
-
-        {% if coverage_section %}
-
         //______________________________________
-        // Chart 3: Coverage
+        // Start Chart 3
         chart3 = new Highcharts.chart(
         {
-            chart: {renderTo: 'container3', borderColor: '#003399', height: 200, borderWidth: 1, isZoomed:false},
-            credits: {enabled: false},title: {text: 'RNAseq Coverage'},
-            xAxis: {min: 158141736, max: 158287227,minRange: 1000,startOnTick: true, endOnTick: true, showLastLabel: true, tickInterval: 500,
-                        /*   events: {
-                                         afterSetExtremes: function() {
-                                             if (!this.chart.options.chart.isZoomed) {
-                                                var xMin = this.chart.xAxis[0].min;
-                                                var xMax = this.chart.xAxis[0].max;
-                                               chart1.options.chart.isZoomed = true;
-                                               chart2.options.chart.isZoomed = true;
-                                               chart1.xAxis[0].setExtremes(xMin, xMax, true);
-                                                
-                                               chart2.xAxis[0].setExtremes(xMin, xMax, true);
-                                                 chart1.options.chart.isZoomed = false;
-                                               chart2.options.chart.isZoomed = false;
-                                                
-                                            }
-                                }
-                                        } */
-                        },    
+            chart: {renderTo: 'container3',
+                    zoomType: 'x',
+                    borderColor: '#003399',
+                    height: 200,
+                    borderWidth: 1,
+                    isZoomed:false,
+                    resetZoomButton: { theme: { display: 'none'} }
+                   },
+            credits: {enabled: false},
+            title: {text: 'RNAseq Coverage'},
+            xAxis: {
+                min: {{ abslolute_position_min }},
+                max: {{ abslolute_position_max }},
+                tickPositions: tick_points_array,
+                labels: {formatter: function() {return this.value;}},
+                //scrollbar: {enabled: true},
+                events: {
+                    afterSetExtremes: function() {
+                        if (!this.chart.options.chart.isZoomed) {
+                            
+                            var local_min = Math.trunc(this.chart.xAxis[0].min);
+                            var local_max = Math.trunc(this.chart.xAxis[0].max); 
+                            var tk_positions = computeTickInterval(local_min, local_max);
+
+                            chart1.xAxis[0].options.min = local_min;
+                            chart1.xAxis[0].options.max = local_max;
+                            chart1.xAxis[0].options.tickPositions = tk_positions;
+                            chart1.xAxis[0].isDirty = true;
+                            chart1.xAxis[0].setExtremes(null, null);
+
+                            chart2.xAxis[0].options.min = local_min;
+                            chart2.xAxis[0].options.max = local_max;
+                            chart2.xAxis[0].options.tickPositions = tk_positions;
+                            chart2.xAxis[0].isDirty = true;
+                            chart2.xAxis[0].setExtremes(null, null);
+
+                            chart3.xAxis[0].options.min = local_min;
+                            chart3.xAxis[0].options.max = local_max;
+                            chart3.xAxis[0].options.tickPositions = tk_positions;
+                            chart3.xAxis[0].isDirty = true;
+                            chart3.xAxis[0].setExtremes(null, null);
+                                             
+                            chart1.options.chart.isZoomed = true;
+                            chart2.options.chart.isZoomed = true;
+                            
+                            chart1.xAxis[0].setExtremes(local_min, local_max, true);          
+                            chart2.xAxis[0].setExtremes(local_min, local_max, true);
+                            
+                            chart1.options.chart.isZoomed = false;
+                            chart2.options.chart.isZoomed = false;                            
+                            
+                        }
+                    }
+                }
+            },  
+            
             yAxis: {title: {text: ''},
-            categories: [],
-            //reversed: false,
-            labels: {enabled: false},
-            gridLineColor: '#ffffff',
-            lineColor: '#ffffff'
+                categories: [],
+                //reversed: false,
+                labels: {enabled: false},
+                gridLineColor: '#ffffff',
+                lineColor: '#ffffff'
             },
+            
             plotOptions: {
-                                    scatter: {
-                                        marker: {
-                                            radius: 5,
-                                            states: {
-                                                hover: {
-                                                    enabled: true,
-                                                    lineColor: 'rgb(100,100,100)'
-                                                }
-                                            }
-                                        },
-                                        states: {
-                                            hover: {
-                                                marker: {
-                                                    enabled: false
-                                                }
-                                            }
-                                        }
-                                    },
+                scatter: {
+                    marker: {
+                        radius: 5,
+                        states: {
+                            hover: {
+                                enabled: true,
+                                lineColor: 'rgb(100,100,100)'
+                            }
+                        }
+                    },
+                    states: {
+                        hover: {
+                            marker: {
+                                enabled: false
+                            }
+                        }
+                    }
+                },
             series: {
                         dataLabels: {enabled: false},
                         showInLegend: false            
                     }
             },
-              series: [{
+            
+            series: [{
                 type: 'spline',
                 data: datam
-              }
-              ]
+            }]
             
-            }, function(chart) { //add this function to the chart definition to get synchronized crosshairs
-                                //this function needs to be added to each syncronized chart 
-                                syncronizeCrossHairs(chart);
+            },
+            
+            //add this function to the chart definition to get synchronized crosshairs
+            //this function needs to be added to each syncronized chart
+            function(chart) {
+                 syncronizeCrossHairs(chart);
             }
-
-        ); //End chart 3 /coverage)
-        {% endif %}            
-
-        });
+            ); // end chart 3
+            
+        }); // end second ready document function
     }); // end first document ready function
-});
+}); // end first function
+
 
 </script>
 
