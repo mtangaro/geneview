@@ -166,7 +166,7 @@ $(function() {
                     resetZoomButton: { theme: { display: 'none'} }
                    },
             credits: {enabled: false},
-            title: {text: 'Gene View<br>chr4:{{ abslolute_position_min }}:{{ abslolute_position_max }}'},
+            title: {text: 'Gene View<br>Gene: {{ gene_name }}<br>{{ gene_chr }}:{{ abslolute_position_min }}:{{ abslolute_position_max }}'},
             xAxis: {
                 min: {{ abslolute_position_min }},
                 max: {{ abslolute_position_max }},
@@ -257,7 +257,7 @@ $(function() {
 
             // Data dictionary chart 1
             series: [
-                {{ data_series }}
+                {{ data_series | replace('"','') }}
             ],
             
             tooltip: {
