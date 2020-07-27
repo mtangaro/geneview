@@ -14,7 +14,7 @@
 <body>
 <div id="container"></div>
 <div id="container2"></div>
-<div id="container3"></div>
+{% if coverage_section %}<div id="container3"></div>{% endif %}
 <button id="btn">Unzoom</button> 
 </body>    
     
@@ -30,7 +30,9 @@ $(function() {
     // MAIN
     var chart1;
     var chart2;
+    {% if coverage_section %}
     var chart3;
+    {% endif %}
     var controllingChart;
     
     var defaultTickInterval = 500;
@@ -41,11 +43,11 @@ $(function() {
         function unzoom() {
             chart1.options.chart.isZoomed = false;
             chart2.options.chart.isZoomed = false;
-            chart3.options.chart.isZoomed = false;
-            
+            {% if coverage_section %}chart3.options.chart.isZoomed = false;{% endif %}
+             
             chart1.xAxis[0].setExtremes(null, null);
             chart2.xAxis[0].setExtremes(null, null);
-            chart3.xAxis[0].setExtremes(null, null);
+            {% if coverage_section %}chart3.xAxis[0].setExtremes(null, null);{% endif %}
         }
 
         //catch mousemove event and have all 3 charts' crosshairs move along indicated values on x axis
@@ -80,6 +82,7 @@ $(function() {
                     id: "myPlotLineId"
                 });
 
+                {% if coverage_section %}
                 var xAxis3 = chart3.xAxis[0];
                 xAxis3.removePlotLine("myPlotLineId");
                 xAxis3.addPlotLine({
@@ -89,6 +92,7 @@ $(function() {
                     //dashStyle: 'dash',                   
                     id: "myPlotLineId"
                 });
+                {% endif %}
 
                 //if you have other charts that need to be syncronized - update their crosshair (plot line) in the same way in this function.                   
             }); // end mousemove
@@ -130,19 +134,19 @@ $(function() {
             chart1.xAxis[0].isDirty = true;
             chart2.xAxis[0].options.tickInterval = currentTickInterval;
             chart2.xAxis[0].isDirty = true;
-            chart3.xAxis[0].options.tickInterval = currentTickInterval;
-            chart3.xAxis[0].isDirty = true;
+            {% if coverage_section %}chart3.xAxis[0].options.tickInterval = currentTickInterval;{% endif %}
+            {% if coverage_section %}chart3.xAxis[0].isDirty = true;{% endif %}
         }
 
         //reset the extremes and the tickInterval to default values
         function unzoom(min, max) {
             chart1.xAxis[0].isDirty = true;
             chart2.xAxis[0].isDirty = true;
-            chart3.xAxis[0].isDirty = true;
+            {% if coverage_section %}chart3.xAxis[0].isDirty = true;{% endif %}
         
             chart1.xAxis[0].setExtremes(min, max);
             chart2.xAxis[0].setExtremes(min, max);
-            chart3.xAxis[0].setExtremes(min, max);
+            {% if coverage_section %}chart3.xAxis[0].setExtremes(min, max);{% endif %}
         }
 
         $(document).ready(function() {
@@ -193,20 +197,22 @@ $(function() {
                             chart2.xAxis[0].isDirty = true;
                             chart2.xAxis[0].setExtremes(null, null);
 
+                            {% if coverage_section %}
                             chart3.xAxis[0].options.min = local_min;
                             chart3.xAxis[0].options.max = local_max;
                             chart3.xAxis[0].options.tickPositions = tk_positions;
                             chart3.xAxis[0].isDirty = true;
                             chart3.xAxis[0].setExtremes(null, null);
-                                             
+                            {% endif %}
+
                             chart2.options.chart.isZoomed = true;
-                            chart3.options.chart.isZoomed = true;
+                            {% if coverage_section %}chart3.options.chart.isZoomed = true;{% endif %}
                             
                             chart2.xAxis[0].setExtremes(local_min, local_max, true);          
-                            chart3.xAxis[0].setExtremes(local_min, local_max, true);
+                            {% if coverage_section %}chart3.xAxis[0].setExtremes(local_min, local_max, true);{% endif %}
                             
                             chart2.options.chart.isZoomed = false;
-                            chart3.options.chart.isZoomed = false;
+                            {% if coverage_section %}chart3.options.chart.isZoomed = false;{% endif %}
                             
                         }
                     }
@@ -315,20 +321,22 @@ $(function() {
                             chart2.xAxis[0].isDirty = true;
                             chart2.xAxis[0].setExtremes(null, null);
 
+                            {% if coverage_section %}
                             chart3.xAxis[0].options.min = local_min;
                             chart3.xAxis[0].options.max = local_max;
                             chart3.xAxis[0].options.tickPositions = tk_positions;
                             chart3.xAxis[0].isDirty = true;
                             chart3.xAxis[0].setExtremes(null, null);
-                                             
+                            {% endif %}
+
                             chart1.options.chart.isZoomed = true;
-                            chart3.options.chart.isZoomed = true;
+                            {% if coverage_section %}chart3.options.chart.isZoomed = true;{% endif %}
                             
                             chart1.xAxis[0].setExtremes(local_min, local_max, true);          
-                            chart3.xAxis[0].setExtremes(local_min, local_max, true);
+                            {% if coverage_section %}chart3.xAxis[0].setExtremes(local_min, local_max, true);{% endif %}
                             
                             chart1.options.chart.isZoomed = false;
-                            chart3.options.chart.isZoomed = false;
+                            {% if coverage_section %}chart3.options.chart.isZoomed = false;{% endif %}
                             
                         }
                     }
@@ -382,6 +390,7 @@ $(function() {
         }
         ); // End Chart 2
 
+        {% if coverage_section %}
         //______________________________________
         // Start Chart 3
         chart3 = new Highcharts.chart(
@@ -488,7 +497,8 @@ $(function() {
                  syncronizeCrossHairs(chart);
             }
             ); // end chart 3
-            
+            {% endif %}
+
         }); // end second ready document function
     }); // end first document ready function
 }); // end first function

@@ -35,4 +35,9 @@ Usage
 python render_geneview.py --gene-name GRIA2 --start 158141846 --end 158287221 --chr chr4
 ```
 
+To enable coverage histogram, use the corresponding flag:
+```
+python render_geneview.py --gene-name GRIA2 --start 158141846 --end 158287221 --chr chr4 --enable-coverage
+```
+
 The rendered page is named **geneview_test.html**
